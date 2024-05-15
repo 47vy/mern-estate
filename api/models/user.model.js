@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-    userName: {
+    username: {
         type: String,
         required: true, // This will throw an error if the username is missing
         unique: true, // This will throw an error if the username already exists
