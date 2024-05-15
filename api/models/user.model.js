@@ -15,6 +15,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true, // This will throw an error if the username is missing
     },
+    avatar: {
+        type: String,
+        default: "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
+    },
 }, { timestamps: true }); // This will add a createdAt and updatedAt field to the schema
 
 const User = mongoose.model("User", userSchema);
