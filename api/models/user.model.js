@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
         required: true, // This will throw an error if the email is missing
         unique: true, // This will throw an error if the email already exists
     },
-    passWord: {
+    password: {
         type: String,
         required: true, // This will throw an error if the username is missing
     },
