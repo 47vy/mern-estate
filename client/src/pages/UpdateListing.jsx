@@ -1,17 +1,18 @@
-import React, { useEffect } from "react";
-import { useState } from "react";
-import { app } from "../firebase";
+import { useEffect, useState } from "react";
 import {
   getDownloadURL,
   getStorage,
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
+import { app } from "../firebase";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function CreateListing() {
   const { currentUser } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+  const params = useParams();
   const [files, setFiles] = useState([]);
   const [formData, setFormData] = useState({
     imageUrls: [],
@@ -29,11 +30,8 @@ export default function CreateListing() {
   });
   const [imageUploadError, setImageUploadError] = useState(false);
   const [uploading, setUploading] = useState(false);
-  //   console.log(formData);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const params = useParams();
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -68,8 +66,8 @@ export default function CreateListing() {
           setImageUploadError(false);
           setUploading(false);
         })
-        .catch((error) => {
-          setImageUploadError("Image upload failed (2mb max per image)");
+        .catch((err) => {
+          setImageUploadError("Image upload failed (2 mb max per image)");
           setUploading(false);
         });
     } else {
@@ -84,7 +82,6 @@ export default function CreateListing() {
       const fileName = new Date().getTime() + file.name;
       const storageRef = ref(storage, fileName);
       const uploadTask = uploadBytesResumable(storageRef, file);
-
       uploadTask.on(
         "state_changed",
         (snapshot) => {
@@ -144,13 +141,11 @@ export default function CreateListing() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.imageUrls.length < 1) {
-      return setError("You need to upload at least one image");
-    }
-    if (+formData.regularPrice < +formData.discountPrice)
-      return setError("Discount price cannot be higher than regular price");
-
     try {
+      if (formData.imageUrls.length < 1)
+        return setError("You must upload at least one image");
+      if (+formData.regularPrice < +formData.discountPrice)
+        return setError("Discount price must be lower than regular price");
       setLoading(true);
       setError(false);
       const res = await fetch(`/api/listing/update/${params.listingId}`, {
@@ -170,7 +165,7 @@ export default function CreateListing() {
       }
       navigate(`/listing/${data._id}`);
     } catch (error) {
-      setError(error);
+      setError(error.message);
       setLoading(false);
     }
   };
@@ -183,11 +178,11 @@ export default function CreateListing() {
         <div className="flex flex-col gap-4 flex-1">
           <input
             type="text"
-            placeholder="Title"
+            placeholder="Name"
             className="border p-3 rounded-lg"
             id="name"
-            maxLength={62}
-            minLength={10}
+            maxLength="62"
+            minLength="10"
             required
             onChange={handleChange}
             value={formData.name}
@@ -239,7 +234,7 @@ export default function CreateListing() {
                 onChange={handleChange}
                 checked={formData.parking}
               />
-              <span>Parking Spot</span>
+              <span>Parking spot</span>
             </div>
             <div className="flex gap-2">
               <input
@@ -267,8 +262,8 @@ export default function CreateListing() {
               <input
                 type="number"
                 id="bedrooms"
-                min={1}
-                max={10}
+                min="1"
+                max="10"
                 required
                 className="p-3 border border-gray-300 rounded-lg"
                 onChange={handleChange}
@@ -280,8 +275,8 @@ export default function CreateListing() {
               <input
                 type="number"
                 id="bathrooms"
-                min={1}
-                max={10}
+                min="1"
+                max="10"
                 required
                 className="p-3 border border-gray-300 rounded-lg"
                 onChange={handleChange}
@@ -293,15 +288,15 @@ export default function CreateListing() {
               <input
                 type="number"
                 id="regularPrice"
-                min={50}
-                max={10000000000}
+                min="50"
+                max="10000000"
                 required
                 className="p-3 border border-gray-300 rounded-lg"
                 onChange={handleChange}
                 value={formData.regularPrice}
               />
               <div className="flex flex-col items-center">
-                <p>Regular Price</p>
+                <p>Regular price</p>
                 {formData.type === "rent" && (
                   <span className="text-xs">($ / month)</span>
                 )}
@@ -312,15 +307,15 @@ export default function CreateListing() {
                 <input
                   type="number"
                   id="discountPrice"
-                  min={0}
-                  max={10000000000}
+                  min="0"
+                  max="10000000"
                   required
                   className="p-3 border border-gray-300 rounded-lg"
                   onChange={handleChange}
                   value={formData.discountPrice}
                 />
                 <div className="flex flex-col items-center">
-                  <p>Discounted Price</p>
+                  <p>Discounted price</p>
                   {formData.type === "rent" && (
                     <span className="text-xs">($ / month)</span>
                   )}
@@ -332,7 +327,7 @@ export default function CreateListing() {
         <div className="flex flex-col flex-1 gap-4">
           <p className="font-semibold">
             Images:
-            <span className="font-normal text-slate-600 ml-2">
+            <span className="font-normal text-gray-600 ml-2">
               The first image will be the cover (max 6)
             </span>
           </p>
@@ -381,7 +376,7 @@ export default function CreateListing() {
             disabled={loading || uploading}
             className="p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
           >
-            {loading ? 'Updating...' : 'Update listing'}
+            {loading ? "Updating..." : "Update listing"}
           </button>
           {error && <p className="text-red-700 text-sm">{error}</p>}
         </div>
